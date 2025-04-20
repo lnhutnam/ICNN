@@ -1,0 +1,4 @@
+name = "ICNN"
+uuid = "cc2126ad-8872-4921-a0f7-f27401a54f5a"
+authors = ["lnnam "]
+version = "0.1.0"
