@@ -120,11 +120,24 @@ class PICNN_Conv2d(nn.Module):
             )
             u = self.bn[i](self.activation_fn(self.Wbar[i](u)))
         
+        # Get actual feature dimensions after convolutions
+        batch_size = u.size(0)
+        actual_feature_size = u.view(batch_size, -1).size(1)
+        
+        # Dynamically adapt FC layers if needed (first forward pass)
+        if not hasattr(self, 'fc_initialized') or not self.fc_initialized:
+            device = u.device  # Get the current device (CPU or CUDA)
+            self.fc_uz = nn.Linear(actual_feature_size, actual_feature_size).to(device)
+            self.fc_z = nn.Linear(actual_feature_size, 1, bias=False).to(device)
+            self.fc_u = nn.Linear(actual_feature_size, 1).to(device)
+            register_parametrization(self.fc_z, "weight", SoftplusParameterization())
+            self.fc_initialized = True
+        
         # Flatten for fully connected layers
-        u = u.view(-1, 768)
-        z = z.view(-1, 768)
+        u_flat = u.view(batch_size, -1)
+        z_flat = z.view(batch_size, -1)
         
         # Final output
-        z = self.activation_fn(self.fc_z(positive_part(self.fc_uz(u)) * z) + self.fc_u(u))
+        z_out = self.activation_fn(self.fc_z(positive_part(self.fc_uz(u_flat)) * z_flat) + self.fc_u(u_flat))
         
-        return z
+        return z_out.squeeze(-1)  # Return scalar per sample

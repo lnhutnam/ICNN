@@ -250,7 +250,7 @@ def visualize_training_history(history):
     plt.ylabel('Loss')
     plt.legend()
     plt.grid(True)
-    plt.savefig('picnn_conv2d_training_history.png')
+    plt.savefig('./figures/picnn_conv2d_training_history.png')
     plt.show()
 
 
@@ -288,7 +288,7 @@ def visualize_model_output(model, x_image, y_image, device):
     
     plt.suptitle(f'Model Output: {output:.4f}')
     plt.tight_layout()
-    plt.savefig('picnn_conv2d_visualization.png')
+    plt.savefig('./figures/picnn_conv2d_visualization.png')
     plt.show()
 
 
@@ -365,7 +365,7 @@ def main():
     visualize_model_output(model, x_sample[0], y_sample[0], device)
     
     # Save final model
-    final_path = os.path.join(LOG_CONFIG['checkpoint_dir'], 'picnn_conv2d_final.pth')
+    final_path = os.path.join(LOG_CONFIG['checkpoint_dir'], './checkpoint/picnn_conv2d_final.pth')
     torch.save(model.state_dict(), final_path)
     print(f"Final model saved to {final_path}")
 

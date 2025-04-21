@@ -82,7 +82,7 @@ def demonstrate_ficnn():
         X_tensor = torch.tensor(X_grid, dtype=torch.float32)
         
         # Get predictions
-        y_pred = model(X_tensor).numpy()
+        y_pred = model(X_tensor).detach().numpy()
         
         # Reshape for plotting
         Y_pred = y_pred.reshape(X1.shape)
@@ -108,7 +108,7 @@ def demonstrate_ficnn():
         ax2.set_zlabel('f(x)')
         
         plt.tight_layout()
-        plt.savefig('ficnn_example.png')
+        plt.savefig('./figures/ficnn_example.png')
         plt.show()
     
     print("FICNN demonstration completed.")
@@ -194,7 +194,7 @@ def demonstrate_picnn():
         X_repeated = x_fixed.repeat(Y_tensor.shape[0], 1)
         
         # Get predictions
-        Z_pred = model(X_repeated, Y_tensor).squeeze().numpy()
+        Z_pred = model(X_repeated, Y_tensor).detach().numpy()
         
         # Reshape for plotting
         Z_pred = Z_pred.reshape(Y1.shape)
@@ -220,7 +220,7 @@ def demonstrate_picnn():
         fig.colorbar(contour2, ax=ax2)
         
         plt.tight_layout()
-        plt.savefig('picnn_example.png')
+        plt.savefig('./figures/picnn_example.png')
         plt.show()
         
         # 3D visualization
@@ -243,7 +243,7 @@ def demonstrate_picnn():
         ax2.set_zlabel('f(x,y)')
         
         plt.tight_layout()
-        plt.savefig('picnn_example_3d.png')
+        plt.savefig('./figures/picnn_example_3d.png')
         plt.show()
     
     print("PICNN demonstration completed.")
@@ -266,7 +266,7 @@ def demonstrate_picnn_conv2d():
         nr_channels=(16, 32, 64),  # Reduced channels
         kernel_sizes=(3, 3, 3),    # Smaller kernel size
         strides=(2, 2, 2),         # Same strides
-        in_channels=in_channels
+        in_channels=in_channels,
     )
     
     # Generate synthetic image data
@@ -304,7 +304,7 @@ def demonstrate_picnn_conv2d():
     ax2.axis('off')
     
     plt.tight_layout()
-    plt.savefig('picnn_conv2d_example.png')
+    plt.savefig('./figures/picnn_conv2d_example.png')
     plt.show()
     
     print("PICNN_Conv2d demonstration completed.")

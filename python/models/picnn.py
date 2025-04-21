@@ -43,6 +43,9 @@ class PICNN(nn.Module):
         self.activation_fn_z = activation_fn_z
         self.loss_fn = nn.BCEWithLogitsLoss()
         
+        # Add output layer to convert from z_dim to scalar output
+        self.output_layer = nn.Linear(z_dim, 1)
+        
         # Initialize weight matrices
         Wbar = []   # u-path weights
         Wz = []     # z-path weights (must be non-negative)
@@ -116,4 +119,7 @@ class PICNN(nn.Module):
              self.Wy[i+1](y * self.Wyu[i+1](u)) +
              self.Wu[i+1](u))
         
-        return z
+        # Convert from z_dim to scalar output for each sample in the batch
+        output = self.output_layer(z).squeeze(-1)
+        
+        return output

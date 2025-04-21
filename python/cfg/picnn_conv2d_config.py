@@ -11,7 +11,7 @@ PICNN_CONV2D_CONFIG = {
     'in_channels': 1,                   # Input channels (e.g., 1 for grayscale)
     
     # Image dimensions
-    'image_size': 32,                   # Image size (assumed square)
+    'image_size': 32,                   # Input image size (assumed square)
 }
 
 # Training configuration

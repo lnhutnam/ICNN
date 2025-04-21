@@ -126,8 +126,8 @@ class TestPICNN(unittest.TestCase):
         y = torch.randn(batch_size, self.y_dim)
         output = self.model(x, y)
         
-        # Check output shape
-        self.assertEqual(output.shape, (batch_size, self.z_dim))
+        # Check output shape - now should be [batch_size] due to the output_layer
+        self.assertEqual(output.shape, (batch_size,))
 
 
 class TestPICNNConv2d(unittest.TestCase):
@@ -143,7 +143,7 @@ class TestPICNNConv2d(unittest.TestCase):
             nr_channels=self.nr_channels,
             kernel_sizes=self.kernel_sizes,
             strides=self.strides,
-            in_channels=self.in_channels
+            in_channels=self.in_channels,
         )
     
     def test_model_initialization(self):

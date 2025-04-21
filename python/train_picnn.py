@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from models import PICNN
-from utils.torch_utils import generate_synthetic_data, create_dataloader
+from utils.data_utils import generate_synthetic_data, create_dataloader
 from cfg.config import PICNN_CONFIG, TRAINING_CONFIG
 
 
@@ -83,7 +83,17 @@ def train_picnn(model, x_data, y_data, targets, num_epochs, batch_size, learning
         for x_batch, y_batch, target_batch in dataloader:
             # Forward pass
             output = model(x_batch, y_batch)
-            loss = loss_fn(output.squeeze(), target_batch)
+            
+            # Handle output shape
+            if output.dim() > 1:
+                # If output has more than 1 dimension, reduce to match target
+                output = output.squeeze()  # Remove all dimensions of size 1
+            
+            # If still multiple dimensions, take mean
+            if output.dim() > 1:
+                output = output.mean(dim=-1)
+            
+            loss = loss_fn(output, target_batch)
             
             # Backward pass and optimize
             optimizer.zero_grad()
@@ -151,7 +161,7 @@ def visualize_picnn_results(model, x_fixed):
     ax2.set_title('PICNN Output (Contour)')
     
     plt.tight_layout()
-    plt.savefig('picnn_visualization.png')
+    plt.savefig('./figure/picnn_visualization.png')
     plt.show()
 
 
@@ -197,7 +207,7 @@ def main():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.grid(True)
-    plt.savefig('picnn_loss.png')
+    plt.savefig('./figures/picnn_loss.png')
     
     # Visualize results for a fixed x
     print("Visualizing results...")
@@ -205,7 +215,7 @@ def main():
     visualize_picnn_results(model, x_fixed)
     
     # Save model
-    torch.save(model.state_dict(), 'picnn_model.pth')
+    torch.save(model.state_dict(), './checkpoint/picnn_model.pth')
     print("Model saved to 'picnn_model.pth'")
 
 
