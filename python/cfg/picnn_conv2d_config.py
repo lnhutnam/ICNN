@@ -16,7 +16,7 @@ PICNN_CONV2D_CONFIG = {
 
 # Training configuration
 TRAINING_CONFIG = {
-    'epochs': 50,                       # Number of training epochs
+    'epochs': 500,                       # Number of training epochs
     'batch_size': 64,                   # Batch size
     'lr': 0.0001,                       # Learning rate
     'weight_decay': 1e-5,               # Weight decay for regularization

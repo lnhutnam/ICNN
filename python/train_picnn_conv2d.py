@@ -1,5 +1,5 @@
 """
-Script to train and test the PICNN_Conv2d model
+Script to train and test the PICNN_Conv2d model with GPU support
 This example uses synthetic image data
 """
 
@@ -251,7 +251,7 @@ def visualize_training_history(history):
     plt.legend()
     plt.grid(True)
     plt.savefig('./figures/picnn_conv2d_training_history.png')
-    plt.show()
+    plt.close()  # Close the plot to prevent display in environments without GUI
 
 
 def visualize_model_output(model, x_image, y_image, device):
@@ -276,12 +276,12 @@ def visualize_model_output(model, x_image, y_image, device):
     # Create figure
     fig, axs = plt.subplots(1, 2, figsize=(12, 5))
     
-    # Plot x input
+    # Plot x input (move back to CPU for visualization)
     axs[0].imshow(x_image.squeeze().cpu().numpy(), cmap='gray')
     axs[0].set_title('Input X (Non-convex)')
     axs[0].axis('off')
     
-    # Plot y input
+    # Plot y input (move back to CPU for visualization)
     axs[1].imshow(y_image.squeeze().cpu().numpy(), cmap='gray')
     axs[1].set_title('Input Y (Convex)')
     axs[1].axis('off')
@@ -289,18 +289,31 @@ def visualize_model_output(model, x_image, y_image, device):
     plt.suptitle(f'Model Output: {output:.4f}')
     plt.tight_layout()
     plt.savefig('./figures/picnn_conv2d_visualization.png')
-    plt.show()
+    plt.close()  # Close the plot to prevent display in environments without GUI
 
 
 def main():
     """Main function"""
-    # Set device
+    # Set up GPU/CUDA device with fallback to CPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
+    
+    # Check and print CUDA details if using GPU
+    if torch.cuda.is_available():
+        print(f'CUDA Device Name: {torch.cuda.get_device_name(0)}')
+        print(f'CUDA Device Count: {torch.cuda.device_count()}')
+        print(f'Current CUDA Device: {torch.cuda.current_device()}')
     
     # Set random seed for reproducibility
     torch.manual_seed(42)
     np.random.seed(42)
+    
+    # Ensure reproducibility on GPU
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(42)
+        torch.cuda.manual_seed_all(42)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
     
     # Configuration
     num_samples = 1000
@@ -333,6 +346,11 @@ def main():
         in_channels=PICNN_CONV2D_CONFIG['in_channels']
     ).to(device)
     
+    # Wrap model with DataParallel if multiple GPUs are available
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs!")
+        model = nn.DataParallel(model)
+    
     # Loss function and optimizer
     criterion = nn.MSELoss()
     optimizer = optim.Adam(
@@ -360,13 +378,17 @@ def main():
     
     # Visualize model output
     print("Visualizing model output...")
-    # Get a sample from validation set
+    # Get a sample from validation set and move to device
     x_sample, y_sample, _ = next(iter(val_loader))
     visualize_model_output(model, x_sample[0], y_sample[0], device)
     
     # Save final model
-    final_path = os.path.join(LOG_CONFIG['checkpoint_dir'], './checkpoint/picnn_conv2d_final.pth')
-    torch.save(model.state_dict(), final_path)
+    # If using DataParallel, save the state dict of the underlying model
+    final_path = os.path.join(LOG_CONFIG['checkpoint_dir'], 'picnn_conv2d_final.pth')
+    if isinstance(model, nn.DataParallel):
+        torch.save(model.module.state_dict(), final_path)
+    else:
+        torch.save(model.state_dict(), final_path)
     print(f"Final model saved to {final_path}")
 
 
